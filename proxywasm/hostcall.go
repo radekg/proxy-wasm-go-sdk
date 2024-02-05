@@ -881,7 +881,13 @@ func getBuffer(bufType internal.BufferType, start, maxSize int) ([]byte, error) 
 		if retData == nil {
 			return nil, types.ErrorStatusNotFound
 		}
-		return internal.RawBytePtrToByteSlice(retData, retSize), nil
+
+		off_heap := internal.RawBytePtrToByteSlice(retData, retSize)
+		on_heap := make([]byte, len(off_heap))
+		copy(on_heap, off_heap)
+		cleanup_off_heap_bytes(&off_heap)
+
+		return on_heap, nil
 	default:
 		return nil, internal.StatusToError(st)
 	}
